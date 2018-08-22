@@ -46,4 +46,9 @@ class login {
      * 邮箱地址登录
      */
     private function login_email() {}
+
+    final public function __invoke()
+    {
+        // TODO: Implement __invoke() method.
+    }
 }
