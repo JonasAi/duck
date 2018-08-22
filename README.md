@@ -18,10 +18,10 @@ Replace `[my-app-name]` with the desired directory name for your new application
 To run the application in development, you can run these commands 
 
 	cd [my-app-name]
-	php composer.phar start
+	composer start
 
 Run this command in the application directory to run the test suite
 
-	php composer.phar test
+	composer test
 
 That's it! Now go build something cool.
