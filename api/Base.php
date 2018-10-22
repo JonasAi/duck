@@ -197,20 +197,8 @@ class Base
     {
         $this->response = $this->response
             ->withJson($this->genOutput());
+        // 要保证返回的是 response
         return;
-        $newResponse = $this->response
-            // ->withHeader('responseType', 'NOTIFY')
-            ->withJson($this->genOutput());
-
-        // 理论上这里直接 return $newResponse 就可以但是不生效...
-        // 看源码卡在了 body 的位置,不知道为什么body 在 app respond 方法中无法正常工作
-        // 所以这里进行了简化的处理
-        // 这里是因为
-        foreach ($newResponse->getHeaders() as $name => $val) {
-            header($name . ': ' . $newResponse->getHeaderLine($name));
-        }
-
-        die ($newResponse->getBody());
     }
 
     public function __get($name)
@@ -220,19 +208,14 @@ class Base
             throw new \Exception('容器设置异常',1001);
         }
 
-        switch ($name) {
-            case 'logger' :
-                is_null($this->logger) && $this->logger = $this->container->get('logger');
-                break;
-            case 'db' :
-                is_null($this->db) && $this->db = $this->container->get('db');
-                break;
-            default:
-                throw new \Exception('未设置该变量',1000);
-                break;
+        if (isset($this->_params[$name])){
+            return $this->_params[$name];
         }
 
-        return $this->$name;
+        if (isset($this->_args[$name])) {
+            return $this->_args[$name];
+        }
+        return null;
     }
 
     // TODO 这里要做一些类的基础操作

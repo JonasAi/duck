@@ -19,7 +19,7 @@ use Lib\Lang;
  * tuned to the specifics of this skeleton app, so if your needs are
  * different, you'll need to change it.
  */
-class UserV2 extends Base
+class Login extends Base
 {
 
     private $_innerErr = [

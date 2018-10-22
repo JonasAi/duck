@@ -11,8 +11,9 @@ class Auth {
   public static function urlSafeB64Decode($input){   
       return base64_decode(str_replace(array('-', '_'), array('+', '/'), $input));
   }
-  public static function encode(array $payload, string $key, string $alg = 'SHA256')
+  public static function encode(array $payload, string $key, string $alg = null)
   {
+      $alg = 'SHA256';
       $key = md5($key);
       $jwt = self::urlsafeB64Encode(json_encode(['typ' => 'JWT', 'alg' => $alg])) . '.' . self::urlsafeB64Encode(json_encode($payload));
       return $jwt . '.' . self::signature($jwt, $key, $alg);
