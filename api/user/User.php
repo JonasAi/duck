@@ -8,6 +8,8 @@ use Slim\Http\Response;
 use Slim\Http\Environment;
 use Illuminate\Database\Query\Builder;
 use Monolog\Logger;
+use Api\Base;
+use Lib\Lang;
 
 // use Slim\Views\Twig;
 
@@ -17,27 +19,71 @@ use Monolog\Logger;
  * tuned to the specifics of this skeleton app, so if your needs are
  * different, you'll need to change it.
  */
-class User
+class User extends Base
 {
 
-    private $view;
-    private $logger;
-    protected $table;
+    private $_innerErr = [
+        // getUsers
+        101 => [
+            Lang::LANG_EN => '',
+            Lang::LANG_CN => ''
+        ],
+        // banUser
+        102 => [
+            Lang::LANG_EN => '',
+            Lang::LANG_CN => ''
+        ],
+        103 => [
+            Lang::LANG_EN => '',
+            Lang::LANG_CN => '缺少用户ID'
+        ],
+    ];
 
-    public function __construct(Logger $logger, Builder $table) {
-
-        // $this->view   = $view;
-        $this->logger = $logger;
-        $this->table  = $table;
-        // parent::__construct();
+    public function __construct($container)
+    {
+        parent::__construct($container);
+        // 设置内部错误到 Base
+        $this->appendErr($this->_innerErr);
     }
 
-    public function getUsers() {
-    	$rows = $this->table->get();
-    	var_dump($rows[0]);die;
-    } 
+    /**
+     * 获取用户列表
+     */
+    public function getUsers()
+    {
+        !$this->offset && $this->offset = 0;
+        !$this->limit && $this->limit = 20;
 
-    public static function getName($name) {
-    	echo $name;die;
+        $db = $this->container->get('db');
+        $users = $db->table('user')
+            ->limit($this->limit)
+            ->offset($this->offset)
+            ->get();
+
+        $this->setOutput('userList', $users);
+        $this->setStatus(200);
+        $this->output();
+    }
+
+    /**
+     * 获取用户详情
+     */
+    public function getUserInfo(){
+        if (!$this->uId) {
+            $this->setStatus(103)->output();
+        }
+
+        $db = $this->container->get('db');
+        $uInfo = $db->table('user')->where(['u_id'=>$this->uId])->first();
+        $this->setOutput('userInfo',$uInfo)->output();
+    }
+
+    public function banUser() {
+        $this->setOutput('test', 'strval');
+        $this->setOutput('test1', [1, 2, 3, 4,]);
+        $this->setOutput('test2', []);
+        $this->setStatus(200);
+        $this->output();
+        $this->output();
     }
 }
