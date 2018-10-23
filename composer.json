@@ -34,7 +34,8 @@
         "psr-4":{
             "Api\\":"api/",
             "Lib\\":"lib/",
-            "Admin\\":"admin/"
+            "Admin\\":"admin/",
+            "Model\\":"model/"
         }
     },
     "config": {
