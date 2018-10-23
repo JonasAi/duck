@@ -25,17 +25,17 @@ class Login extends Base
     private $_innerErr = [
         // getUsers
         101 => [
-            Lang::LANG_EN => '',
-            Lang::LANG_CN => ''
+            'en' => '',
+            'cn' => ''
         ],
         // banUser
         102 => [
-            Lang::LANG_EN => '',
-            Lang::LANG_CN => ''
+            'en' => '',
+            'cn' => ''
         ],
         103 => [
-            Lang::LANG_EN => '',
-            Lang::LANG_CN => '缺少用户ID'
+            'en' => '',
+            'cn' => '缺少用户ID'
         ],
     ];
 

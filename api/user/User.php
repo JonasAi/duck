@@ -34,7 +34,6 @@ class User
 
     public function getUsers() {
     	$rows = $this->table->get();
-    	$logger
     	var_dump($rows[0]);die;
     } 
 
