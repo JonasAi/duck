@@ -35,7 +35,8 @@
             "Api\\":"api/",
             "Lib\\":"lib/",
             "Admin\\":"admin/",
-            "Model\\":"model/"
+            "Model\\":"model/",
+            "Shell\\":"shell/"
         }
     },
     "config": {

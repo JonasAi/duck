@@ -15,6 +15,7 @@ return [
             'path' => isset($_ENV['docker']) ? 'php://stdout' : __DIR__ . '/../logs/app.log',
             'level' => \Monolog\Logger::DEBUG,
         ],
+        // https://www.kancloud.cn/iwzh/laravel_doc_zh-5-5/400323
         'db' => [
             'driver' => 'mysql',
             'host'   => '127.0.0.1',

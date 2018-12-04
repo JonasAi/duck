@@ -11,6 +11,22 @@ if (PHP_SAPI == 'cli-server') {
 
 require __DIR__ . '/../vendor/autoload.php';
 
+
+
+// 静态文件文件夹
+define('__STATIC__',__DIR__.'/static/');
+// 模板文件文件夹
+define('__TEMPLATES__',__DIR__.'/../templates/');
+// 脚本文件
+define('__SHELL__',__DIR__.'/../shell/');
+// 项目根目录
+define('__ROOT__',__DIR__.'/../');
+// 库
+define('__LIB__',__DIR__.'/../lib/');
+
+
+
+
 session_start();
 // Instantiate the app
 $settings = require __DIR__ . '/../src/settings.php';

@@ -52,15 +52,15 @@ class Base
             Lang::LANG_EN => '',
             Lang::LANG_CN => ''
         ],
-        1000 => [
+        10 => [
             Lang::LANG_EN => '',
             Lang::LANG_CN => '未设置该变量'
         ],
-        1001 => [
+        11 => [
             Lang::LANG_EN => '',
             Lang::LANG_CN => '容器设置异常'
         ],
-        1002 => [
+        12 => [
             Lang::LANG_EN => 'We dont know what you want!',
             Lang::LANG_CN => '未找到对应类或方法'
         ],
@@ -71,7 +71,8 @@ class Base
     {
         $this->container = $container;
         $this->_lang     = new Lang(
-            Lang::iso2code($container->environment->get('HTTP_CONTENT_LANGUAGE'))
+//            Lang::iso2code($container->environment->get('HTTP_CONTENT_LANGUAGE'))
+            Lang::iso2code('CN')
         );
     }
 
@@ -137,12 +138,13 @@ class Base
      */
     final public function setStatus($status)
     {
-        // 状态码最小为 200,TODO 此处可以优化
-        (intval($status) < 200) && $status = 200;
+        // 状态码最小为 0,TODO 此处可以优化
+        (intval($status) <= 0) && $status = 200;
         $this->_outputStatus = $status;
         // 设置状态的同时获取错误文案信息
         if (isset(self::$_standard_erros[$status])) {
-            $curLang = $this->_lang->current_lang();
+//            $curLang = $this->_lang->current_lang();
+            $curLang = 'cn';
             $this->_outputMsg = self::$_standard_erros[$status][$curLang];
         } else {
             $this->_outputMsg = 'Inner Error, please contact the administrator. ';
@@ -216,6 +218,11 @@ class Base
             return $this->_args[$name];
         }
         return null;
+    }
+
+    public function getDb($key=null) {
+        return is_null($key) ? $this->container->get('db') 
+            : $this->container->get(trim($key)); 
     }
 
     // TODO 这里要做一些类的基础操作

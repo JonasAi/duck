@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>标的控制</title>
+</head>
+<body>
+<!-- 开发环境版本，包含了有帮助的命令行警告 -->
+<script type="text/javascript" src="/static/dev_vue.js"></script>
+<!-- 生产环境版本，优化了尺寸和速度 -->
+<!--<script type="text/javascript" src="/web/vue/vue.js"></script>-->
+<script type="text/javascript" src="/static/axios.min.js"></script>
+<script type="text/javascript" src="/static/moment.min.js"></script>
+<script type="text/javascript" src="/static/qs.min.js"></script>
+<!-- 引入样式 -->
+<link rel="stylesheet" href="/static/element/index.css">
+<!-- 引入组件库 -->
+<script type="text/javascript" src="/static/element/index.js"></script>
+<!-- 用户内容 START-->
+<div id="app">
+    <el-container>
+        <el-header>
+
+        </el-header>
+        <el-main>
+<!--            <template>-->
+<!--                <el-carousel :interval="4000" type="card" height="200px" indicator-position="none"  style="height: 220px;">-->
+<!--                    <el-carousel-item v-for="item in 6" :key="item">-->
+<!--                        <h3>{{ item }}</h3>-->
+<!--                    </el-carousel-item>-->
+<!--                </el-carousel>-->
+<!--            </template>-->
+            <template>
+                <el-form ref="form" :model="{}" label-width="80px">
+                    <el-form-item label="活动形式">
+<!--                        :autosize="{ minRows: 2, maxRows: 50}"-->
+                        <el-input type="textarea" v-model="form.text"  :rows="20" style="width: 45%" resize="none" autoComplete="off"></el-input>
+
+<!--                        :value="resHtml|arr2Str"-->
+                        <el-input type="textarea" class="resBox" :value="resHtml|arr2Str" :rows="20" style="width: 45%;margin-left: 30px;border:0;" resize="none" readonly autoComplete="off" ></el-input>
+<!--                        <div v-html="resHtml" style="width: 45%;margin-left: 30px;"></div>-->
+                    </el-form-item>
+                    <el-form-item>
+                        <el-button type="primary" @click="getSqlFormat()">立即创建</el-button>
+                        <el-button @click="resetForm('ruleForm')">重置</el-button>
+                    </el-form-item>
+                </el-form>
+<!--                <el-form :model="ruleForm2" status-icon :rules="rules2" ref="ruleForm2" label-width="100px" class="demo-ruleForm"></el-form>-->
+            </template>
+        </el-main>
+    </el-container>
+</div>
+<script  type="module">
+    // 添加这个否则会导致服务端判断是否 ajax 失败
+    axios.defaults.headers.post['X-Requested-With'] = 'XMLHttpRequest';
+    axios.defaults.headers.get['X-Requested-With'] = 'XMLHttpRequest';
+    // 添加响应拦截器
+    axios.interceptors.response.use(function(response) {
+        if (!response.data.status) {
+            if (confirm("已退出登录,\n 是否跳转到登录界面?")) {
+                location.href = '/login/';
+            }
+        }
+        if (response.data.msg !='ok' && response.data.msg != '') {
+            // 提示错误信息
+            ELEMENT.Notification({
+                title: '操作',
+                message: response.data.msg
+            });
+        }
+
+        return response.data;
+    }, function(err) {
+        Promise.reject(err)
+    })
+    let Main = {
+        data() {
+            let validatePass = (rule, value, callback) => {
+                if (!value) {
+                    return callback(new Error('标的金额为必填项'));
+                }
+                setTimeout(() => {
+                    let regu = "^(([1-9][0-9]*)|(([0]\\.\\d{1,2}|[1-9][0-9]*\\.\\d{1,2})))$";
+                    let re = new RegExp(regu);
+                    if (re.test(value)) {
+                        callback();
+                    } else {
+                        callback(new Error('标的金额必须为数字且最多两位小数'));
+                    }
+                }, 1000);
+            };
+            return {
+                uriList: '/fun_format',
+                loading: false,
+                total : 1,
+                tableList: [],
+                resHtml : '请输入要格式化的内容',
+                needRefresh:false,
+                form: {
+                    text: '',
+                },
+            }
+        },
+        filters:{
+            arr2Str(key) {
+                let res = key;
+                if(key instanceof Array) {
+                    res = key.join("\n");
+                }
+                return res;
+            }
+        },
+        methods: {
+            getSqlFormat:function(isFirst,b) {
+                this.needRefresh = false;
+
+                let params = this.form;
+                this.getRes(this.uriList,params,true);
+            },
+            refreshData:function(isFirst,b) {
+                this.needRefresh = false;
+                location.href = location.href;
+            },
+            addTrioBidPop: function (pId) {
+                // 新手专享
+                this.needRefresh = false;
+                this.getRes(this.uriGetAddInfo,{biddingType:this.biddingType});
+                this.trioBidDialogVisible = true;
+            },
+            getMoney: function (row, column) {
+                let money = row[column.property];
+                if (money == undefined) {
+                    return 0;
+                }
+                let newMoney;
+                newMoney = (money / 1000000);
+                return newMoney;
+            },
+            getName : function () {
+                return '新手专享';
+            },
+            notice:function(msg,ext) {
+                const h = this.$createElement;
+                let title = '操作';
+                if (ext) {
+                    title = ext.title;
+                }
+                this.$notify({
+                    title: title,
+                    message: h('i', { style: 'color: teal'}, msg)
+                });
+            },
+            getRes: function (getDataUrl, params, notice) {
+                let _this = this;
+                // 蒙版
+                _this.loading = true;
+                let data = {};
+                if (params) {
+                    data = Qs.stringify(params);
+                }
+                axios.post(getDataUrl, data).then(function (res) {
+                    if(res.status != 200) {_this.loading = false;return false;}
+                    // error_code != 200 已被拦截器拦截
+                    console.log(res.data);
+                    for (let i in res.data) {
+                        if (_this[i]) {
+                            _this[i] = res.data[i];
+                        } else {
+                            console.log('未设置对应key' + i);
+                        }
+                    }
+                    if (notice) {
+                        _this.notice(res.msg);
+                    }
+                    if (_this.needRefresh) {
+                        _this.refreshData()
+                    }
+                    _this.loading = false;
+                }).catch(function (error) {
+                    alert(error);
+                    return false;
+                });
+            }
+        },
+        created() {
+            // this.refreshData(true);
+            // let params = {
+            //     biddingType : this.biddingType,
+            //     offset :0,
+            //     limit : 20
+            // };
+            // this.getRes(this.uriList,params);
+        },
+        computed: {}
+    };
+
+    let Ctor = Vue.extend(Main);
+    new Ctor().$mount('#app')
+</script>
+</body>
+</html>
+
+<style>
+    .el-header, .el-footer {
+        background-color: #B3C0D1;
+        color: #333;
+        text-align: center;
+        line-height: 60px;
+    }
+
+    .el-main {
+        background-color: #E9EEF3;
+        color: #333;
+        text-align: center;
+        line-height: 160px;
+    }
+
+    body > .el-container {
+        margin-bottom: 40px;
+    }
+
+    .el-container:nth-child(5) .el-aside,
+    .el-container:nth-child(6) .el-aside {
+        line-height: 260px;
+    }
+
+    /*.el-container:nth-child(7) .el-aside {*/
+        /*line-height: 320px;*/
+    /*}*/
+    .el-carousel__item h3 {
+        color: #475669;
+        font-size: 14px;
+        opacity: 0.75;
+        line-height: 200px;
+        margin: 0;
+    }
+
+    .el-carousel__item:nth-child(2n) {
+        background-color: #99a9bf;
+    }
+    .el-carousel__indicators {
+        height: 30px;
+        background-color: red;
+    }
+    .el-carousel__indicator {
+
+    }
+    .el-carousel__item:nth-child(2n+1) {
+        background-color: #d3dce6;
+    }
+    .resBox .el-textarea__inner  {
+        background-color: #E9EEF3;
+        border: 0px;
+        color: #333;
+    }
+</style>
